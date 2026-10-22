@@ -1,0 +1,96 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>节气</title>
+<style>
+:root{--a:#d4ecd2;--b:#f8e4ea;--t:#3d5242}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:"Noto Serif CJK SC","Songti SC","Source Han Serif SC",serif;color:var(--t);background:linear-gradient(var(--a),var(--b))}
+#c{position:fixed;inset:0;width:100%;height:100%}
+main{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.2vh;padding:20px 24px}
+.top{font-size:13px;letter-spacing:.3em;opacity:.65}
+h1{font-size:min(27vw,118px);font-weight:600;letter-spacing:.12em;margin-right:-.12em;line-height:1}
+.dt{font-size:15px;letter-spacing:.12em;opacity:.8}
+.hou{display:flex;flex-direction:column;gap:7px;font-size:15px;min-width:60%}
+.hou p{display:flex;align-items:center;gap:10px;opacity:.55}
+.hou p::before{content:"";width:8px;height:8px;border-radius:50%;border:1.5px solid var(--t);flex:none}
+.hou p.on{opacity:1;font-weight:700}
+.hou p.on::before{background:var(--t)}
+.card{width:100%;max-width:360px;background:rgba(255,255,255,.42);border-radius:18px;padding:16px 18px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-align:center;line-height:1.8}
+.card .fd{font-size:13px;opacity:.75;margin-top:4px}
+nav{display:flex;gap:14px;align-items:center}
+nav button{font:inherit;color:var(--t);background:rgba(255,255,255,.5);border:0;border-radius:22px;height:44px;min-width:44px;padding:0 20px;font-size:16px}
+.nx2{font-size:12px;opacity:.6;letter-spacing:.1em}
+.dots{display:flex;gap:5px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--t);opacity:.2}
+.dots i.on{opacity:.85;transform:scale(1.5)}
+main>*{transition:opacity .35s}
+main.fade>*{opacity:0}
+</style></head><body>
+<canvas id="c"></canvas>
+<main id="m">
+<p class="top" id="top"></p>
+<h1 id="nm"></h1>
+<p class="dt" id="dt"></p>
+<div class="hou" id="hou"></div>
+<div class="card"><p id="ln"></p><p class="fd" id="fd"></p></div>
+<nav><button id="pv">‹</button><button id="td">今天</button><button id="nx">›</button></nav>
+<p class="nx2" id="nx2"></p>
+<div class="dots" id="dots"></div>
+</main>
+<script>
+const N="小寒,大寒,立春,雨水,惊蛰,春分,清明,谷雨,立夏,小满,芒种,夏至,小暑,大暑,立秋,处暑,白露,秋分,寒露,霜降,立冬,小雪,大雪,冬至".split(",");
+const H="雁北乡,鹊始巢,雉始雊;鸡始乳,征鸟厉疾,水泽腹坚;东风解冻,蛰虫始振,鱼陟负冰;獭祭鱼,鸿雁来,草木萌动;桃始华,仓庚鸣,鹰化为鸠;玄鸟至,雷乃发声,始电;桐始华,田鼠化为鴽,虹始见;萍始生,鸣鸠拂其羽,戴胜降于桑;蝼蝈鸣,蚯蚓出,王瓜生;苦菜秀,靡草死,麦秋至;螳螂生,鵙始鸣,反舌无声;鹿角解,蜩始鸣,半夏生;温风至,蟋蟀居壁,鹰始鸷;腐草为萤,土润溽暑,大雨时行;凉风至,白露降,寒蝉鸣;鹰乃祭鸟,天地始肃,禾乃登;鸿雁来,玄鸟归,群鸟养羞;雷始收声,蛰虫坯户,水始涸;鸿雁来宾,雀入大水为蛤,菊有黄华;豺乃祭兽,草木黄落,蜇虫咸俯;水始冰,地始冻,雉入大水为蜃;虹藏不见,天气上升地气下降,闭塞而成冬;鹖旦不鸣,虎始交,荔挺出;蚯蚓结,麋角解,水泉动".split(";");
+const F="腊八粥,糯米饭,春饼,春笋,梨,春菜,青团,香椿,蚕豆,苦菜,青梅,凉面,藕,绿豆汤,西瓜,鸭子,白露茶,螃蟹,芝麻,柿子,饺子,腌腊肉,羊肉汤,汤圆".split(",");
+const L="最冷的日子才刚开头。;冷到头了,春天就在后面。;风先软了,冰还没化完。;雨落下来,土是软的。;第一声雷,虫子都醒了。;昼夜一样长,往后白天更长。;青的,绿的,雨也是。;雨养着刚冒出来的东西。;蛙叫起来,夏天算开始了。;麦子灌浆,差一点就满。;有芒的忙着收,有种的忙着种。;一年里白天最长的一天。;风是热的,还不到最热。;最热的几天,萤火虫也多。;早晚有点凉,白天还是夏。;暑气到这里算是退了。;夜里凉,草叶上有了露水。;昼夜又一样长,往后夜更长。;露更冷了,菊花正开。;第一场霜,树叶开始往下落。;水面结起薄冰,该添衣服了。;天上还没下多少,心里先冷了。;雪下得大了,夜很长。;夜最长的一天,过了就慢慢回头。".split(";");
+const P="ssprrprrffrfffllllllssss";
+const PAL=[["#d4ecd2","#f8e4ea","#3d5242"],["#bfe8e0","#f6f0c4","#27494a"],["#f4d29a","#d98a62","#4a2e20"],["#d3deec","#f3f5f9","#34425a"]];
+const seas=i=>i<2||i>19?3:i<8?0:i<14?1:2;
+const R=Math.PI/180,J=Date.UTC(2000,0,1,12),D=864e5;
+function lon(ms){const n=(ms-J)/D,g=(357.528+.9856003*n)*R;return(((280.46+.9856474*n+1.915*Math.sin(g)+.02*Math.sin(2*g))%360)+360)%360}
+function term(y,i){let t=Date.UTC(y,0,5)+i*15.2184*D;const g=(285+15*i)%360;for(let k=0;k<6;k++){const d=((g-lon(t)+540)%360)-180;t+=d/.9856*D}return t}
+const day=ms=>Math.floor((ms+288e5)/D);
+const now=Date.now(),Y=new Date(now+288e5).getUTCFullYear();
+const E=[];for(let y=Y-1;y<=Y+1;y++)for(let i=0;i<24;i++)E.push({i,ms:term(y,i),y});
+E.sort((a,b)=>a.ms-b.ms);
+let cur=0;E.forEach((e,k)=>{if(day(e.ms)<=day(now))cur=k});
+let v=cur;
+const $=id=>document.getElementById(id);
+const md=ms=>{const d=new Date(ms+288e5);return(d.getUTCMonth()+1)+"月"+d.getUTCDate()+"日"};
+$("dots").innerHTML="<i></i>".repeat(24);
+function render(){
+  const e=E[v],i=e.i,p=PAL[seas(i)],r=document.documentElement.style;
+  r.setProperty("--a",p[0]);r.setProperty("--b",p[1]);r.setProperty("--t",p[2]);
+  const df=day(e.ms)-day(now);
+  $("top").textContent="二十四节气 · "+new Date(e.ms+288e5).getUTCFullYear();
+  $("nm").textContent=N[i];
+  $("dt").textContent=md(e.ms)+" · "+(df==0?"就是今天":df>0?"还有"+df+"天":v==cur?"已过"+(-df)+"天":(-df)+"天前");
+  const act=v==cur?Math.min(2,Math.floor(-df/5)):-1;
+  $("hou").innerHTML=H[i].split(",").map((s,k)=>"<p"+(k==act?' class="on"':"")+">"+s+"</p>").join("");
+  $("ln").textContent=L[i];$("fd").textContent="这几天吃："+F[i];
+  const nx=E[v+1];$("nx2").textContent="下一个 "+N[nx.i]+" · "+md(nx.ms);
+  [...$("dots").children].forEach((d,k)=>d.className=k==i?"on":"");
+  setType(P[i]);
+}
+function go(k){if(k<0||k>=E.length-1)return;const m=$("m");m.classList.add("fade");setTimeout(()=>{v=k;render();m.classList.remove("fade")},260)}
+$("pv").onclick=()=>go(v-1);$("nx").onclick=()=>go(v+1);$("td").onclick=()=>go(cur);
+let sx=0;addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
+addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>60)go(v+(d<0?1:-1))});
+const cv=$("c"),x=cv.getContext("2d");let W,Hh,pt=[],ty="";
+function rs(){const q=devicePixelRatio||1;W=innerWidth;Hh=innerHeight;cv.width=W*q;cv.height=Hh*q;x.setTransform(q,0,0,q,0,0)}
+function np(init){return{x:Math.random()*(W+60),y:init?Math.random()*Hh:-20,s:Math.random()*.8+.6,r:Math.random()*6.28,w:Math.random()*6.28,c:Math.random()*3|0}}
+function setType(t){if(t==ty)return;ty=t;const n={p:34,l:30,s:70,r:90,f:34}[t];pt=[];for(let k=0;k<n;k++)pt.push(np(true))}
+function draw(){
+  x.clearRect(0,0,W,Hh);
+  for(const q of pt){q.w+=.02;q.r+=.02;
+    if(ty=="r"){q.y+=q.s*9;q.x-=q.s*2;x.strokeStyle="rgba(70,110,150,.45)";x.beginPath();x.moveTo(q.x,q.y);x.lineTo(q.x+3,q.y-14*q.s);x.stroke()}
+    else if(ty=="s"){q.y+=q.s*.9;q.x+=Math.sin(q.w)*.5;x.fillStyle="rgba(255,255,255,.85)";x.beginPath();x.arc(q.x,q.y,q.s*2.2,0,6.28);x.fill()}
+    else if(ty=="f"){q.x+=Math.sin(q.w)*.4;q.y+=Math.cos(q.w*.7)*.3-.05;const a=.3+.3*Math.sin(q.w*2),g=x.createRadialGradient(q.x,q.y,0,q.x,q.y,10);g.addColorStop(0,"rgba(235,245,110,"+(a+.3)+")");g.addColorStop(1,"rgba(235,245,110,0)");x.fillStyle=g;x.fillRect(q.x-10,q.y-10,20,20)}
+    else{const l=ty=="l";q.y+=q.s*(l?1.1:.9);q.x+=Math.sin(q.w)*(l?1.2:.8);x.save();x.translate(q.x,q.y);x.rotate(q.r);x.fillStyle=l?["#d9822b","#b5522a","#e0a13a"][q.c]:"#f4b6c2";x.beginPath();x.ellipse(0,0,l?9:6,l?5:3.5,0,0,6.28);x.fill();x.restore()}
+    if(ty=="f"){if(q.y<-10)q.y=Hh;if(q.y>Hh+10)q.y=0;if(q.x<-10)q.x=W;if(q.x>W+10)q.x=0}
+    else if(q.y>Hh+20||q.x<-30||q.x>W+30)Object.assign(q,np(false));
+  }
+  requestAnimationFrame(draw);
+}
+addEventListener("resize",rs);rs();render();draw();
+</script></body></html>
